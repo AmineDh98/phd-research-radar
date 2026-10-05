@@ -2,7 +2,7 @@ name: DC04 Weekly Research Radar
 
 on:
   schedule:
-    - cron: "0 18 * * 0"
+    - cron: "17 18 * * 0"
       timezone: "Europe/Berlin"
 
   workflow_dispatch:

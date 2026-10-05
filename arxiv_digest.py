@@ -374,7 +374,10 @@ def send_email(subject: str, body: str, attachment: Path | None = None) -> None:
         msg["From"] = f"{EMAIL_DISPLAY_NAME} <{address}>"
         msg["To"] = EMAIL_TO
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+    with smtplib.SMTP("smtp.gmail.com", 587, timeout=60) as smtp:
+        smtp.ehlo()
+        smtp.starttls()
+        smtp.ehlo()
         smtp.login(address, password)
         smtp.sendmail(address, [EMAIL_TO], msg.as_string())
 

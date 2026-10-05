@@ -9,22 +9,22 @@
 # -----------------------------------------------------------------------
 categories:
   - cs.RO
-  # - cs.AI
-  # - cs.LG
-  # - eess.SY
-  # - math.OC
+  - cs.AI
+  - cs.LG
+  - eess.SY
+  - math.OC
 
 # -----------------------------------------------------------------------
 # Paper counts
 # -----------------------------------------------------------------------
 
 # Number of papers the LLM selects and includes in the digest per category.
-select_n: 3
+select_n: 10
 
 # Safety cap on papers fetched from arXiv per category before filtering.
 # Set this comfortably above the typical daily submission volume for your
 # categories (hep-ph ~ 50-80/day, cs.LG ~ 100-200/day).
-max_results: 50
+max_results: 250
 
 # -----------------------------------------------------------------------
 # Researcher profile
@@ -227,7 +227,7 @@ output_instructions: |
   If any starred authors appear on a paper, mention that in the summary.
 
   TOP PICKS:
-  Across all categories combined, select up to 5 of the most relevant
+  Across all categories combined, select up to 10 of the most relevant
   papers. For each, write 4-6 sentences covering what is novel and why
   it matters. Arrange this section into two parts if helpful. If fewer
   than [N] papers score above 0, cover only those that exist.

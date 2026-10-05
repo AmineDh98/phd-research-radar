@@ -252,8 +252,8 @@ def select_best(
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
-        temperature=0.0,
-        max_tokens=32768,
+     
+        max_completion_tokens=2048,
         extra_body={"usage": {"include": True}} if IS_OPENROUTER else {},
     )
 
@@ -324,8 +324,8 @@ def format_digest(results: dict[str, list[dict]]) -> str:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
-        temperature=0.3,
-        max_tokens=8000,
+        
+        max_completion_tokens=8000,
         extra_body={"usage": {"include": True}} if IS_OPENROUTER else {},
     )
 

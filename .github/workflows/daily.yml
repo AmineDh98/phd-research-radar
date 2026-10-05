@@ -1,23 +1,27 @@
-name: arXiv Daily Digest
+name: DC04 Weekly Research Radar
 
 on:
   schedule:
-    - cron: "57 12 * * 1-5"
+    - cron: "0 18 * * 0"
       timezone: "Europe/Berlin"
+
   workflow_dispatch:
 
 jobs:
   run:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
       - run: pip install -r requirements.txt
+
       - run: python arxiv_digest.py
         env:
-          KIT_LLM_KEY:              ${{ secrets.KIT_LLM_KEY }}
-          GMAIL_ADDRESS:            ${{ secrets.GMAIL_ADDRESS }}
-          GMAIL_APP_PASSWORD:       ${{ secrets.GMAIL_APP_PASSWORD }}
-          MATTERMOST_WEBHOOK_URL:   ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          KIT_LLM_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}

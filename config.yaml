@@ -1,0 +1,319 @@
+# arXiv Daily Digest — base configuration
+# Copy this file to config.yaml and fill in the fields below.
+# config.yaml is gitignored so your personal settings stay local.
+#
+# Full list of arXiv categories: https://arxiv.org/category_taxonomy
+
+# -----------------------------------------------------------------------
+# arXiv categories to monitor (one or more)
+# -----------------------------------------------------------------------
+categories:
+  - cs.RO
+  - cs.AI
+  - cs.LG
+  - eess.SY
+  - math.OC
+
+# -----------------------------------------------------------------------
+# Paper counts
+# -----------------------------------------------------------------------
+
+# Number of papers the LLM selects and includes in the digest per category.
+select_n: 20
+
+# Safety cap on papers fetched from arXiv per category before filtering.
+# Set this comfortably above the typical daily submission volume for your
+# categories (hep-ph ~ 50-80/day, cs.LG ~ 100-200/day).
+max_results: 1000
+
+# -----------------------------------------------------------------------
+# Researcher profile
+# Used by the LLM both to select relevant papers and to write the digest.
+# Describe who the digest is for and what topics they care about.
+# For multiple researchers, list each one with their topics separately.
+# -----------------------------------------------------------------------
+researcher_profile: |
+  I am a PhD researcher working on:
+
+  "Hybrid Learning Control Strategies for Agent-based
+  Intralogistic Material Flow Systems."
+
+  My research focuses on intelligent planning and control for
+  agent-based intralogistics and planar transport systems,
+  especially magnetic levitation and planar motor systems such
+  as Beckhoff XPlanar and related industrial platforms.
+
+  CORE RESEARCH AREAS:
+
+  1. Multi-agent path planning and motion planning
+     - Multi-Agent Path Finding (MAPF)
+     - Conflict-Based Search (CBS)
+     - A*
+     - D* Lite
+     - decentralized path planning
+     - online replanning
+     - dynamic obstacle avoidance
+     - multi-agent coordination
+
+  2. Trajectory planning and trajectory optimization
+     - time-optimal trajectory generation
+     - near-time-optimal planning
+     - real-time trajectory planning
+     - kinodynamic motion planning
+     - trajectory optimization
+     - smooth trajectory generation
+     - velocity constraints
+     - acceleration constraints
+     - jerk constraints
+
+  3. Path representation and geometric planning
+     - splines
+     - B-splines
+     - Bézier curves
+     - polynomial trajectories
+     - path parameterization
+     - trajectory parameterization
+     - path smoothing
+     - curvature-constrained paths
+
+  4. Safe learning and hybrid control
+     - reinforcement learning for control
+     - safe reinforcement learning
+     - learning-based control
+     - hybrid learning and classical control
+     - model predictive control
+     - nonlinear MPC / NMPC
+     - distributed MPC
+     - adaptive control
+     - learning-enhanced MPC
+
+  5. Formal safety methods
+     - Control Barrier Functions (CBF)
+     - Higher-Order Control Barrier Functions (HOCBF)
+     - Hamilton-Jacobi reachability
+     - safety filters
+     - constrained control
+     - collision avoidance
+     - formally safe learning
+
+  6. Distributed and multi-agent optimization
+     - ADMM
+     - distributed optimization
+     - distributed MPC
+     - cooperative control
+     - decentralized control
+
+  7. Industrial material-flow systems
+     - intralogistics
+     - material handling
+     - flexible manufacturing
+     - planar transport systems
+     - magnetic levitation transport
+     - intelligent conveyor systems
+     - routing and scheduling
+     - production logistics
+
+  8. Simulation and sim-to-real
+     - physics-based simulation
+     - digital twins
+     - simulation refinement using runtime data
+     - sim-to-real transfer
+     - reinforcement learning environments
+     - system identification
+     - learning from operational data
+
+  HIGHLY RELEVANT PHYSICAL SYSTEMS:
+
+  - Beckhoff XPlanar
+  - magnetic planar drives
+  - planar motor systems
+  - planar transport systems
+  - magnetic levitation platforms
+  - intelligent conveyor systems
+  - modular intralogistics systems
+
+  HIGH-PRIORITY METHODOLOGIES:
+
+  - multi-agent motion planning
+  - MAPF
+  - CBS
+  - MPC / NMPC
+  - distributed MPC
+  - ADMM
+  - Control Barrier Functions
+  - Higher-Order CBF
+  - reinforcement learning
+  - safe reinforcement learning
+  - trajectory optimization
+  - spline-based path representation
+  - collision avoidance
+  - real-time replanning
+
+  PAPERS should receive a particularly high relevance score when
+  they combine two or more of these areas, for example:
+
+  - multi-agent planning + MPC
+  - trajectory optimization + collision avoidance
+  - reinforcement learning + formal safety
+  - MPC + Control Barrier Functions
+  - distributed optimization + multi-agent motion planning
+  - splines + time-optimal trajectory generation
+  - sim-to-real + motion planning
+  - industrial intralogistics + learning-based control
+
+  INDUSTRIAL experimental validation is particularly valuable.
+
+  Papers experimentally validated on Beckhoff XPlanar or similar
+  magnetic planar transport systems should receive the highest priority.
+
+  Also prioritize methods that could realistically run under strict
+  real-time constraints in industrial intralogistics systems.
+
+  REFERENCE PAPERS REPRESENTING MY RESEARCH INTERESTS:
+
+  Extremely relevant:
+
+  - "Conflict-based model predictive control for multi-agent
+    path finding experimentally validated on a magnetic planar
+    drive system" — Janning et al.
+
+  - "Fast Near Time-Optimal Motion Planning for Holonomic
+    Vehicles in Structured Environments" — Callens et al.
+
+  - "Multi-Agent Motion Planning on Industrial Magnetic
+    Levitation Platforms: A Hybrid ADMM-HOCBF Approach"
+    — Tistaert et al.
+
+  - "MagBotSim: Physics-Based Simulation and Reinforcement
+    Learning Environments for Magnetic Robotics"
+    — Bergmann, Grothues and Neumann.
+
+  - "From Transportation to Manipulation: Transforming
+    Magnetic Levitation to Magnetic Robotics"
+    — Bergmann, Greis and Neumann.
+
+  Closely relevant:
+
+  - "Path planning algorithm for levitating planar motion system"
+    — Nilsson and Ternerot.
+
+  - "Path planning algorithm for levitating multi agent system"
+    — Ranc.
+
+  - "Path-Planning Algorithms for a Levitating Planar Motion System"
+    — Rehme.
+
+  - "Trajectory Planning and Runtime Control of Planar Movers
+    with a 2D Collision Avoidance Algorithm"
+    — Scoppa.
+
+  - "Sensitivity-Based Distributed NMPC: Experimental Results
+    for a Levitating Planar Motion System"
+    — Pierer von Esch et al.
+
+# -----------------------------------------------------------------------
+# Output instructions
+# Controls the tone, structure, and formatting of the digest body.
+# -----------------------------------------------------------------------
+output_instructions: |
+  Write as a knowledgeable colleague passing on reading recommendations:
+  first person, friendly but professional. Begin with a short generic
+  plural greeting such as "Hey there", "Hello folks", or similar.
+
+  Within summaries, be specific about what is novel and why it matters
+  to the researchers' interests. Use the researcher's name to flag their
+  attention where relevant (e.g. "Aritra, this might interest you").
+  Avoid generic praise; say what the novel contribution actually is.
+  If any starred authors appear on a paper, mention that in the summary.
+
+  TOP PICKS:
+  Across all categories combined, select up to [N] of the most relevant
+  papers. For each, write 4-6 sentences covering what is novel and why
+  it matters. Arrange this section into two parts if helpful. If fewer
+  than [N] papers score above 0, cover only those that exist.
+
+  BY CATEGORY:
+  List the remaining papers grouped by category, ranked within each from
+  most to least relevant. Give only the title and arXiv link, no
+  summaries. Omit categories with no remaining papers.
+
+  Close with a one-line formal sign-off.
+
+  FORMATTING:
+  - Output Markdown compatible with Mattermost webhooks.
+  - Bold (**...**) for paper titles and key terms; italics where appropriate.
+  - All arXiv links as clickable [title](url).
+  - Blank lines between sections.
+  - ASCII only. No emojis, no em dashes, no Unicode special characters.
+
+  I want every selected paper to look approximately like:
+
+  ────────────────────────────────────────────
+
+  1. Multi-Agent Motion Planning on ...
+
+  Authors:
+  Tistaert et al.
+
+  Source:
+  arXiv
+
+  RELEVANCE: 9.5 / 10
+  PRIORITY: Must Read
+
+  Why it matters for DC04:
+  The paper combines distributed MPC using ADMM with
+  Higher-Order Control Barrier Functions for collision-safe
+  multi-agent motion planning on industrial magnetic levitation
+  platforms.
+
+  Connection to your PhD:
+  • Multi-agent coordination
+  • Distributed MPC
+  • Formal safety guarantees
+  • Real-time motion planning
+  • Magnetic levitation transport
+
+  Methods:
+  ADMM · MPC · HOCBF
+
+  Potential research idea:
+  Compare its distributed safety architecture with a
+  learning-enhanced trajectory planner where RL proposes
+  candidate trajectories and an HOCBF layer guarantees
+  collision avoidance.
+
+  Paper:
+  [link]
+
+  ────────────────────────────────────────────
+
+# -----------------------------------------------------------------------
+# LLM backend (OpenAI-compatible API)
+# -----------------------------------------------------------------------
+
+llm:
+  base_url: https://api.openai.com/v1
+  model: gpt-6-luna
+
+# -----------------------------------------------------------------------
+# PDF output
+# -----------------------------------------------------------------------
+
+# Save the digest as a PDF in ./digests/DD-MM-YYYY.pdf after each run.
+create_pdf: false
+
+# -----------------------------------------------------------------------
+# Delivery: enable one or both channels independently
+# -----------------------------------------------------------------------
+delivery:
+  mattermost:
+    enabled: false
+    as_attachment: false
+
+  email:
+    enabled: true
+    as_attachment: false
+    subject: "[DC04] Weekly Research Radar"
+    to: aminedhemaied98.ad@gmail.com
+    display_name: "DC04 Research Radar"

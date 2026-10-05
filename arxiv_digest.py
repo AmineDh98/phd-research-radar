@@ -1,8 +1,10 @@
 """
-arXiv Daily Digest Bot
+arXiv weekly Digest Bot
 
-Fetches papers from specified arXiv categories for the most recent announcement
-window, selects and ranks the most relevant ones per category via the KIT LLM
+Fetches papers from specified arXiv categories published during the
+previous seven days, ranks them according to the DC04 research profile,
+and generates a personalised weekly literature digest.
+ selects and ranks the most relevant ones per category via the KIT LLM
 API, then uses a second LLM call to craft a personalised digest. Delivery is
 either via Gmail SMTP or a Mattermost webhook, controlled by the `delivery` key
 in config.yaml. All user-facing settings are read from config.yaml.
@@ -115,30 +117,16 @@ _POST_ANNOUNCEMENT_OFFSETS: dict[int, tuple[int, int]] = {
 
 
 def get_submission_window() -> tuple[datetime, datetime]:
-    """Return (window_start, window_end) for the most recent arXiv announcement.
-
-    Both datetimes are timezone-aware (America/New_York). Raises ValueError on
-    Saturday, or any time when no announcement data is available.
     """
-    now = datetime.now(tz=_ET)
-    today = now.date()
-    weekday = today.weekday()  # Monday=0 … Sunday=6
+    Return the rolling 7-day window used for the weekly digest.
 
-    if now.hour >= _ANNOUNCEMENT_HOUR and weekday in _POST_ANNOUNCEMENT_OFFSETS:
-        start_off, end_off = _POST_ANNOUNCEMENT_OFFSETS[weekday]
-    elif weekday in _PRE_ANNOUNCEMENT_OFFSETS:
-        start_off, end_off = _PRE_ANNOUNCEMENT_OFFSETS[weekday]
-    else:
-        raise ValueError(
-            f"Cannot determine arXiv announcement window for weekday {weekday} "
-            "at the current time (Saturday has no announcement)."
-        )
+    The end of the window is the current time in US Eastern time,
+    and the start is exactly 7 days earlier.
+    """
+    window_end = datetime.now(tz=_ET)
+    window_start = window_end - timedelta(days=7)
 
-    def _cutoff(offset: int) -> datetime:
-        d = today + timedelta(days=offset)
-        return datetime(d.year, d.month, d.day, _CUTOFF_HOUR, 0, 0, tzinfo=_ET)
-
-    return _cutoff(start_off), _cutoff(end_off)
+    return window_start, window_end
 
 
 # ---------------------------------------------------------------------------
@@ -227,6 +215,10 @@ def select_best(papers: list[dict], category: str, n: int | None = None) -> list
     """
     if n is None:
         n = SELECT_N
+    if not papers:
+        return [], None
+    
+    n = min(n, len(papers))
     # Truncate abstracts here to keep the prompt within the model's context window.
     # Full abstracts are used later in format_digest where summaries are written.
     numbered = "\n\n".join(
@@ -236,7 +228,7 @@ def select_best(papers: list[dict], category: str, n: int | None = None) -> list
 
     system_prompt = (
         f"{RESEARCHER_PROFILE}\n\n"
-        "You are selecting papers for a physics/ML researcher's daily digest. "
+        "You are selecting papers for a physics/ML researcher's weekly digest. "
         f"Return ONLY a JSON array of exactly {n} integer indices (0-based), "
         "ordered from most to least relevant to the researcher's interests. "
         "No explanation, no markdown — just the raw JSON array, e.g. [3, 7, 12, ...]."
@@ -309,11 +301,11 @@ def format_digest(results: dict[str, list[dict]]) -> str:
 
     system_prompt = (
         f"Researcher Profile:\n{RESEARCHER_PROFILE}\n ################### \n"
-        "You are writing a personalised daily arXiv digest email for researchers. Find their names and interests from the description above. Thereafter, folow the "
+        "You are writing a personalised weekly arXiv digest email for researchers. Find their names and interests from the description above. Thereafter, folow the "
         f"formatting instructions:\n{OUTPUT_INSTRUCTIONS}"
     )
     user_prompt = (
-        "Here are today's selected papers, already ranked from most to least "
+        "Here are this week's selected papers, already ranked from most to least "
         "relevant within each category:\n\n"
         f"{papers_text}\n\n"
         "Write the digest email body now."
@@ -364,7 +356,7 @@ def send_email(subject: str, body: str, attachment: Path | None = None) -> None:
         msg["From"] = f"{EMAIL_DISPLAY_NAME} <{address}>"
         msg["To"] = EMAIL_TO
         msg.attach(MIMEText(
-            "<p>Hi there people, here is your daily digest of interesting papers for today.</p>",
+            "<p>Hi there people, here is your weekly digest of interesting papers for today.</p>",
             "html", "utf-8",
         ))
         with attachment.open("rb") as f:
@@ -430,8 +422,8 @@ def send_mattermost(body: str) -> None:
 
 
 def main() -> None:
-    """Entry point: fetch, select, format, and deliver the daily arXiv digest."""
-    parser = argparse.ArgumentParser(description="arXiv daily digest bot")
+    """Entry point: fetch, select, format, and deliver the weekly arXiv digest."""
+    parser = argparse.ArgumentParser(description="arXiv weekly digest bot")
     parser.add_argument(
         "--config",
         type=Path,
@@ -473,7 +465,10 @@ def main() -> None:
 
     print(f"Using config: {args.config}")
     window_start, window_end = get_submission_window()
-    print(f"Submission window: {window_start.isoformat()} → {window_end.isoformat()} ET")
+    print(
+        f"Weekly search window: "
+        f"{window_start.isoformat()} -> {window_end.isoformat()}"
+    )
 
     counts: dict[str, int] = {}
     all_papers: dict[str, list[dict]] = {}
@@ -487,13 +482,18 @@ def main() -> None:
     if sum(counts.values()) == 0:
         fmt = "%Y-%m-%d %H:%M %Z"
         cat_list = ", ".join(CATEGORIES)
+
         msg = (
-            f"No papers found across all categories [{cat_list}] in the time window "
-            f"{window_start.strftime(fmt)} to {window_end.strftime(fmt)}. "
-            "Perhaps it's a holiday at arXiv today?"
+            f"No papers found across all categories [{cat_list}] "
+            f"between {window_start.strftime(fmt)} and "
+            f"{window_end.strftime(fmt)}."
         )
+
         print(msg)
-        send_mattermost(msg)
+
+        if DELIVER_MATTERMOST:
+            send_mattermost(msg)
+
         return
 
     results: dict[str, list[dict]] = {}
@@ -502,8 +502,10 @@ def main() -> None:
     for category in CATEGORIES:
         selected, usage = select_best(all_papers[category], category)
         results[category] = selected
-        prompt_tokens += usage.prompt_tokens
-        completion_tokens += usage.completion_tokens
+
+        if usage is not None:
+            prompt_tokens += usage.prompt_tokens
+            completion_tokens += usage.completion_tokens
         if IS_OPENROUTER:
             openrouter_cost += getattr(usage, "cost", 0.0) or 0.0
 

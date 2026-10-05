@@ -206,7 +206,11 @@ def fetch_papers(
     return papers
 
 
-def select_best(papers: list[dict], category: str, n: int | None = None) -> list[dict]:
+def select_best(
+        papers: list[dict],
+        category: str,
+        n: int | None = None
+    ) -> tuple[list[dict], object | None]:
     """Use the LLM to select and rank the n most relevant papers.
 
     Sends a numbered list of titles + truncated abstracts and expects a JSON

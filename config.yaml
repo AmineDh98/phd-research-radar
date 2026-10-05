@@ -9,22 +9,22 @@
 # -----------------------------------------------------------------------
 categories:
   - cs.RO
-  - cs.AI
-  - cs.LG
-  - eess.SY
-  - math.OC
+  # - cs.AI
+  # - cs.LG
+  # - eess.SY
+  # - math.OC
 
 # -----------------------------------------------------------------------
 # Paper counts
 # -----------------------------------------------------------------------
 
 # Number of papers the LLM selects and includes in the digest per category.
-select_n: 20
+select_n: 3
 
 # Safety cap on papers fetched from arXiv per category before filtering.
 # Set this comfortably above the typical daily submission volume for your
 # categories (hep-ph ~ 50-80/day, cs.LG ~ 100-200/day).
-max_results: 1000
+max_results: 50
 
 # -----------------------------------------------------------------------
 # Researcher profile
@@ -69,7 +69,7 @@ researcher_profile: |
   3. Path representation and geometric planning
      - splines
      - B-splines
-     - Bézier curves
+     - Bezier curves
      - polynomial trajectories
      - path parameterization
      - trajectory parameterization
@@ -227,7 +227,7 @@ output_instructions: |
   If any starred authors appear on a paper, mention that in the summary.
 
   TOP PICKS:
-  Across all categories combined, select up to [N] of the most relevant
+  Across all categories combined, select up to 5 of the most relevant
   papers. For each, write 4-6 sentences covering what is novel and why
   it matters. Arrange this section into two parts if helpful. If fewer
   than [N] papers score above 0, cover only those that exist.
@@ -248,8 +248,6 @@ output_instructions: |
 
   I want every selected paper to look approximately like:
 
-  ────────────────────────────────────────────
-
   1. Multi-Agent Motion Planning on ...
 
   Authors:
@@ -268,14 +266,14 @@ output_instructions: |
   platforms.
 
   Connection to your PhD:
-  • Multi-agent coordination
-  • Distributed MPC
-  • Formal safety guarantees
-  • Real-time motion planning
-  • Magnetic levitation transport
+  1. Multi-agent coordination
+  2. Distributed MPC
+  3. Formal safety guarantees
+  4. Real-time motion planning
+  5. Magnetic levitation transport
 
   Methods:
-  ADMM · MPC · HOCBF
+  ADMM, MPC, HOCBF
 
   Potential research idea:
   Compare its distributed safety architecture with a
@@ -286,7 +284,6 @@ output_instructions: |
   Paper:
   [link]
 
-  ────────────────────────────────────────────
 
 # -----------------------------------------------------------------------
 # LLM backend (OpenAI-compatible API)

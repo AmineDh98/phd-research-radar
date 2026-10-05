@@ -510,8 +510,8 @@ def main() -> None:
         if usage is not None:
             prompt_tokens += usage.prompt_tokens
             completion_tokens += usage.completion_tokens
-        if IS_OPENROUTER:
-            openrouter_cost += getattr(usage, "cost", 0.0) or 0.0
+            if IS_OPENROUTER:
+                openrouter_cost += getattr(usage, "cost", 0.0) or 0.0
 
     body, usage = format_digest(results)
     prompt_tokens += usage.prompt_tokens

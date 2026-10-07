@@ -13,6 +13,7 @@ categories:
   - cs.LG
   - eess.SY
   - math.OC
+  - cs.MA
 
 # -----------------------------------------------------------------------
 # Paper counts
@@ -33,141 +34,309 @@ max_results: 250
 # For multiple researchers, list each one with their topics separately.
 # -----------------------------------------------------------------------
 researcher_profile: |
-  I am a PhD researcher working on:
+  I am Amine Dhemaied, PhD researcher (DC04) in the CAVECORE MSCA project,
+  working on:
 
   "Hybrid Learning Control Strategies for Agent-based
   Intralogistic Material Flow Systems."
 
-  My research focuses on intelligent planning and control for
-  agent-based intralogistics and planar transport systems,
-  especially magnetic levitation and planar motor systems such
-  as Beckhoff XPlanar and related industrial platforms.
+  My research focuses on real-time planning, trajectory optimization,
+  coordination, and safe control of multiple independently moving loads
+  (passengers/parcels) on omnidirectional planar transport systems such as
+  Cellumation Celluveyor, Beckhoff XPlanar, magnetic planar drives, and
+  related industrial intralogistics platforms.
+
+  CENTRAL RESEARCH PROBLEM:
+
+  I want compact continuous-time trajectory representations for many
+  simultaneously moving planar objects. A centralized optimizer should
+  optimize a small set of trajectory and timing parameters in real time,
+  satisfy kinematic/dynamic limits, and prevent collisions between full
+  object footprints.
+
+  Collision is spatiotemporal: two geometric paths may intersect safely if
+  the corresponding objects occupy the shared region at different times.
+  Therefore papers that jointly reason about geometry and time are especially
+  relevant.
+
+  A major research objective is to minimize the dimensionality and runtime of
+  trajectory optimization while retaining near-optimal or time-optimal motion,
+  strict feasibility, and continuous-time safety guarantees whenever possible.
 
   CORE RESEARCH AREAS:
 
-  1. Multi-agent path planning and motion planning
-     - Multi-Agent Path Finding (MAPF)
-     - Conflict-Based Search (CBS)
-     - A*
-     - D* Lite
-     - decentralized path planning
-     - online replanning
-     - dynamic obstacle avoidance
-     - multi-agent coordination
+  1. Continuous-time trajectory representation
+     - B-splines
+     - uniform B-splines
+     - non-uniform B-splines
+     - Bezier curves
+     - Bernstein polynomial trajectories
+     - piecewise polynomial trajectories
+     - minimum-snap / minimum-jerk trajectories
+     - MINCO / minimum-control trajectory representations
+     - polynomial trajectory parameterization
+     - Pythagorean-hodograph curves when relevant
+     - trajectory basis selection
+     - compact / low-dimensional trajectory parameterizations
+     - local-support trajectory representations
+     - sparse trajectory parameterizations
 
-  2. Trajectory planning and trajectory optimization
-     - time-optimal trajectory generation
-     - near-time-optimal planning
-     - real-time trajectory planning
-     - kinodynamic motion planning
-     - trajectory optimization
-     - smooth trajectory generation
+  2. Geometry-time decomposition and time parameterization
+     - path-velocity decomposition
+     - path + timing / path + progress-variable formulations
+     - trajectory time scaling
+     - time allocation
+     - segment-duration optimization
+     - knot-time optimization
+     - time-optimal path parameterization (TOPP / TOPP-RA)
+     - kinodynamic time parameterization
+     - temporal coordination
+     - velocity profiling
+     - retiming
+     - scheduling integrated with motion planning
+     - resolving conflicts by timing before geometric replanning
+
+  3. Multi-agent and multi-object trajectory optimization
+     - centralized multi-agent trajectory optimization
+     - joint trajectory optimization
+     - multi-robot trajectory optimization
+     - multi-agent motion planning
+     - MAPF and continuous MAPF
+     - conflict-based search (CBS)
+     - conflict-based MPC
+     - prioritized planning
+     - cooperative motion planning
+     - online replanning
+     - local trajectory repair
+     - conflict graphs / interaction graphs
+     - sparse pairwise coupling
+     - large-scale trajectory optimization
+
+  4. Continuous-time collision avoidance and geometric safety
+     - continuous-time collision detection
+     - continuous-time collision avoidance
+     - inter-agent separation over continuous intervals
+     - exact or certified polynomial/spline bounds
+     - convex-hull-based safety certificates
+     - Bernstein bounds
+     - B-spline convex hull properties
+     - separating hyperplanes / time-varying separating hyperplanes
+     - safe corridors / convex corridors
+     - swept volumes / space-time occupancy tubes
+     - collision certificates
+     - interval methods / branch-and-bound safety verification
+     - avoidance of sample-only collision checking
+
+  5. Footprint-aware planar transport
+     - rigid-body trajectories in SE(2)
+     - x-y-theta trajectory planning
+     - polygonal / rectangular object footprints
+     - orientation-aware collision avoidance
+     - rotating-object collision checking
+     - Minkowski sums
+     - signed distance between convex bodies
+     - separating axis theorem
+     - support functions
+     - configuration-space obstacles
+     - simultaneous translation and rotation
+
+  6. Kinematic and dynamic feasibility
      - velocity constraints
      - acceleration constraints
      - jerk constraints
+     - angular velocity / angular acceleration constraints
+     - actuator / wheel limits
+     - continuous-time derivative bounds
+     - kinodynamic planning
+     - differential flatness
+     - feasibility certificates
+     - dynamically feasible trajectory generation
 
-  3. Path representation and geometric planning
-     - splines
-     - B-splines
-     - Bezier curves
-     - polynomial trajectories
-     - path parameterization
-     - trajectory parameterization
-     - path smoothing
-     - curvature-constrained paths
+  7. Optimal and real-time trajectory generation
+     - time-optimal trajectory generation
+     - near-time-optimal planning
+     - minimum-time control
+     - minimum-energy / minimum-control-effort trajectories
+     - minimum jerk / minimum snap
+     - real-time nonlinear optimization
+     - sparse NLP / SQP
+     - sequential convex programming
+     - convexification
+     - warm starting
+     - receding-horizon trajectory optimization
+     - GPU / parallel trajectory optimization when relevant
 
-  4. Safe learning and hybrid control
-     - reinforcement learning for control
-     - safe reinforcement learning
-     - learning-based control
-     - hybrid learning and classical control
-     - model predictive control
-     - nonlinear MPC / NMPC
-     - distributed MPC
-     - adaptive control
-     - learning-enhanced MPC
-
-  5. Formal safety methods
+  8. Formal safety and constrained control
      - Control Barrier Functions (CBF)
      - Higher-Order Control Barrier Functions (HOCBF)
+     - model predictive safety filters
      - Hamilton-Jacobi reachability
-     - safety filters
-     - constrained control
-     - collision avoidance
+     - viability / invariant sets
+     - collision avoidance guarantees
      - formally safe learning
+     - robust constraint satisfaction
 
-  6. Distributed and multi-agent optimization
+  9. MPC and distributed / centralized optimization
+     - MPC / NMPC
+     - distributed MPC
+     - centralized MPC
      - ADMM
      - distributed optimization
-     - distributed MPC
+     - decomposition methods
      - cooperative control
-     - decentralized control
+     - sensitivity-based NMPC
+     - sparse optimal control
 
-  7. Industrial material-flow systems
-     - intralogistics
-     - material handling
-     - flexible manufacturing
-     - planar transport systems
-     - magnetic levitation transport
-     - intelligent conveyor systems
-     - routing and scheduling
-     - production logistics
+  10. Hybrid learning and classical control
+      - reinforcement learning for planning and control
+      - safe reinforcement learning
+      - learning-enhanced trajectory optimization
+      - learned warm starts
+      - learned heuristics
+      - learned conflict prediction
+      - learned priority / scheduling policies
+      - neural trajectory proposals with deterministic safety layers
+      - imitation learning for motion planning
+      - diffusion / flow / generative trajectory planning when real-time and safe
 
-  8. Simulation and sim-to-real
-     - physics-based simulation
-     - digital twins
-     - simulation refinement using runtime data
-     - sim-to-real transfer
-     - reinforcement learning environments
-     - system identification
-     - learning from operational data
+  11. Industrial material-flow systems
+      - intralogistics
+      - material handling
+      - flexible manufacturing
+      - planar transport systems
+      - modular conveyors
+      - intelligent conveyor systems
+      - magnetic levitation transport
+      - planar motor systems
+      - routing and scheduling
+      - high-throughput material flow
+
+  12. Simulation and sim-to-real
+      - physics-based simulation
+      - digital twins
+      - runtime model refinement
+      - sim-to-real transfer
+      - reinforcement learning environments
+      - system identification
+      - learning from operational data
 
   HIGHLY RELEVANT PHYSICAL SYSTEMS:
 
+  - Cellumation Celluveyor
   - Beckhoff XPlanar
   - magnetic planar drives
   - planar motor systems
   - planar transport systems
   - magnetic levitation platforms
+  - omnidirectional conveyor systems
   - intelligent conveyor systems
   - modular intralogistics systems
 
+  HIGHEST-PRIORITY TRAJECTORY REPRESENTATIONS:
+
+  - non-uniform B-splines
+  - uniform B-splines
+  - Bernstein / Bezier polynomial trajectories
+  - MINCO and related minimum-control polynomial representations
+  - piecewise polynomial splines
+  - path + time-scaling / progress-variable representations
+
+  For papers comparing trajectory representations, explicitly look for:
+
+  - number of decision variables
+  - local support and sparsity
+  - continuity order
+  - analytical derivative structure
+  - convex-hull or Bernstein bounding properties
+  - exact / conservative continuous-time constraint enforcement
+  - variable segment duration / knot-time optimization
+  - conditioning and numerical stability
+  - optimization complexity and solve time
+  - warm-start / incremental replanning capability
+  - suitability for many simultaneously optimized agents
+  - ability to represent SE(2) pose and rotating footprints
+
   HIGH-PRIORITY METHODOLOGIES:
 
-  - multi-agent motion planning
-  - MAPF
-  - CBS
+  - continuous-time trajectory optimization
+  - multi-agent trajectory optimization
+  - spline-based trajectory optimization
+  - B-spline optimization
+  - Bernstein polynomial optimization
+  - MINCO
+  - time-optimal path parameterization
+  - trajectory retiming
+  - geometry-time decomposition
+  - continuous-time collision avoidance
+  - footprint-aware collision avoidance
+  - sparse centralized optimization
+  - conflict-graph-based optimization
   - MPC / NMPC
-  - distributed MPC
   - ADMM
   - Control Barrier Functions
   - Higher-Order CBF
-  - reinforcement learning
   - safe reinforcement learning
-  - trajectory optimization
-  - spline-based path representation
-  - collision avoidance
   - real-time replanning
 
-  PAPERS should receive a particularly high relevance score when
-  they combine two or more of these areas, for example:
+  PAPERS SHOULD RECEIVE THE HIGHEST RELEVANCE SCORE WHEN THEY COMBINE
+  MULTIPLE ITEMS BELOW:
 
-  - multi-agent planning + MPC
-  - trajectory optimization + collision avoidance
-  - reinforcement learning + formal safety
-  - MPC + Control Barrier Functions
-  - distributed optimization + multi-agent motion planning
-  - splines + time-optimal trajectory generation
-  - sim-to-real + motion planning
-  - industrial intralogistics + learning-based control
+  - compact trajectory representation + real-time optimization
+  - B-splines / Bernstein / MINCO + continuous-time constraints
+  - trajectory optimization + variable timing / time allocation
+  - multi-agent trajectory optimization + continuous-time collision avoidance
+  - full-footprint / rigid-body collision avoidance + trajectory optimization
+  - temporal coordination + intersecting geometric paths
+  - time-optimal parameterization + multi-agent coordination
+  - local-support splines + local replanning
+  - sparse optimization + many interacting agents
+  - separating hyperplanes / safe corridors + polynomial or spline trajectories
+  - MPC + continuous-time safety guarantees
+  - learning-based proposals + deterministic safety / feasibility layer
+  - industrial planar transport + experimental validation
+
+  SPECIFIC RESEARCH QUESTION TO SUPPORT:
+
+  Which trajectory representation and optimization architecture gives the best
+  tradeoff between:
+
+  1. minimum number of optimization variables,
+  2. real-time centralized optimization of many trajectories,
+  3. near-time-optimal or time-optimal motion,
+  4. strict kinematic / dynamic feasibility,
+  5. continuous-time collision safety for finite footprints,
+  6. flexible temporal coordination at path intersections,
+  7. local replanning without globally perturbing trajectories?
+
+  A particularly important architectural hypothesis is:
+
+  "Optimize timing first, locally deform geometry second, and globally replan
+  only when necessary."
+
+  Therefore strongly prioritize papers that separate geometric path generation
+  from temporal coordination, or demonstrate that collision conflicts can be
+  resolved by retiming rather than geometric replanning.
+
+  DE-PRIORITIZE:
+
+  - purely discrete MAPF papers with no useful connection to continuous motion,
+    kinodynamic feasibility, timing, or industrial execution
+  - single-agent path planning papers without trajectory / control relevance
+  - spline papers concerned only with graphics / CAD and no optimization or
+    motion-planning implications
+  - RL papers without motion planning, control, safety, optimization, or
+    industrial relevance
+  - collision avoidance based only on coarse timestamp sampling when no
+    continuous-time argument or robustification is provided
 
   INDUSTRIAL experimental validation is particularly valuable.
 
-  Papers experimentally validated on Beckhoff XPlanar or similar
-  magnetic planar transport systems should receive the highest priority.
+  Papers experimentally validated on Celluveyor, Beckhoff XPlanar, magnetic
+  planar drives, planar motors, or comparable omnidirectional material-flow
+  systems should receive the highest priority.
 
-  Also prioritize methods that could realistically run under strict
-  real-time constraints in industrial intralogistics systems.
+  Also prioritize methods that could realistically run under strict real-time
+  constraints and scale to many simultaneously moving objects.
 
   REFERENCE PAPERS REPRESENTING MY RESEARCH INTERESTS:
 
@@ -175,41 +344,54 @@ researcher_profile: |
 
   - "Conflict-based model predictive control for multi-agent
     path finding experimentally validated on a magnetic planar
-    drive system" — Janning et al.
+    drive system" - Janning et al.
 
   - "Fast Near Time-Optimal Motion Planning for Holonomic
-    Vehicles in Structured Environments" — Callens et al.
+    Vehicles in Structured Environments" - Callens et al.
 
   - "Multi-Agent Motion Planning on Industrial Magnetic
     Levitation Platforms: A Hybrid ADMM-HOCBF Approach"
-    — Tistaert et al.
+    - Tistaert et al.
+
+  - "GCOPTER: Geometrically Constrained Trajectory Optimization
+    for Multicopters" - Wang et al.
+
+  - papers introducing or extending MINCO trajectory representations
+
+  - papers on continuous-time B-spline trajectory optimization using
+    convex-hull properties or time-varying separating hyperplanes
+
+  - papers on Bernstein-polynomial trajectory optimization with certified
+    bounds on speed, angular rate, obstacle distance, or inter-agent distance
+
+  - papers on time-optimal path parameterization and multi-robot retiming
 
   - "MagBotSim: Physics-Based Simulation and Reinforcement
     Learning Environments for Magnetic Robotics"
-    — Bergmann, Grothues and Neumann.
+    - Bergmann, Grothues and Neumann.
 
   - "From Transportation to Manipulation: Transforming
     Magnetic Levitation to Magnetic Robotics"
-    — Bergmann, Greis and Neumann.
+    - Bergmann, Greis and Neumann.
 
   Closely relevant:
 
   - "Path planning algorithm for levitating planar motion system"
-    — Nilsson and Ternerot.
+    - Nilsson and Ternerot.
 
   - "Path planning algorithm for levitating multi agent system"
-    — Ranc.
+    - Ranc.
 
   - "Path-Planning Algorithms for a Levitating Planar Motion System"
-    — Rehme.
+    - Rehme.
 
   - "Trajectory Planning and Runtime Control of Planar Movers
     with a 2D Collision Avoidance Algorithm"
-    — Scoppa.
+    - Scoppa.
 
   - "Sensitivity-Based Distributed NMPC: Experimental Results
     for a Levitating Planar Motion System"
-    — Pierer von Esch et al.
+    - Pierer von Esch et al.
 
 # -----------------------------------------------------------------------
 # Output instructions
@@ -222,11 +404,16 @@ output_instructions: |
 
   Within summaries, be specific about what is novel and why it matters
   to the researchers' interests. Use the researcher's name to flag their
-  attention where relevant (e.g. "Aritra, this might interest you").
+  attention where relevant (e.g. "Amine, this is especially relevant because...").
   Avoid generic praise; say what the novel contribution actually is.
   If any starred authors appear on a paper, mention that in the summary.
 
   TOP PICKS:
+  When ranking papers, give extra weight to papers that help answer the DC04
+  trajectory-representation question: B-spline vs Bernstein / Bezier vs MINCO
+  vs other compact representations; geometry-time decomposition; continuous-time
+  footprint safety; and sparse centralized optimization of many trajectories.
+
   Across all categories combined, select up to 10 of the most relevant
   papers. For each, write 4-6 sentences covering what is novel and why
   it matters. Arrange this section into two parts if helpful. If fewer
@@ -274,6 +461,24 @@ output_instructions: |
 
   Methods:
   ADMM, MPC, HOCBF
+
+  Trajectory representation:
+  State the representation used (for example B-spline, Bernstein / Bezier,
+  MINCO, direct transcription, waypoints, polynomial, or path + time scaling).
+  If the paper does not specify one, write "Not central / not specified".
+
+  Constraint and safety model:
+  State whether kinematic and collision constraints are enforced continuously,
+  conservatively over intervals, or only at discrete samples. Mention whether
+  finite object footprints and orientation are considered.
+
+  Timing / coordination model:
+  State whether time allocation, segment duration, retiming, scheduling, or
+  progress variables are optimized, especially when geometric paths intersect.
+
+  Computational relevance:
+  Briefly note decision-variable reduction, sparsity, local support, solver type,
+  reported solve time / frequency, and multi-agent scalability when available.
 
   Potential research idea:
   Compare its distributed safety architecture with a

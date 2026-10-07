@@ -19,6 +19,7 @@ import json
 import os
 import re
 import smtplib
+import time
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from email.mime.application import MIMEApplication
@@ -149,60 +150,83 @@ def _llm_client() -> OpenAI:
 def fetch_papers(
     category: str, window_start: datetime, window_end: datetime
 ) -> list[dict]:
-    """Fetch papers from an arXiv category within the given submission window.
+    """Fetch all papers from an arXiv category in the weekly window.
 
-    Retrieves up to MAX_RESULTS recent papers (sorted newest-first) and keeps
-    only those whose ``<published>`` timestamp falls in [window_start, window_end).
-    Returns a list of dicts with keys: ``title``, ``authors``, ``abstract``, ``id``.
-    Raises ``httpx.HTTPStatusError`` on non-200 responses.
-    Silently skips malformed or undatable XML entries.
+    The original implementation requested only the newest MAX_RESULTS papers once.
+    For busy categories that silently truncated the week whenever the cap was hit.
+    This version paginates newest-first until it reaches papers older than
+    ``window_start`` (or a generous hard safety cap), so the weekly window is
+    covered much more reliably.
     """
-    params = {
-        "search_query": f"cat:{category}",
-        "max_results": MAX_RESULTS,
-        "sortBy": "submittedDate",
-        "sortOrder": "descending",
-    }
-    response = httpx.get(ARXIV_API_URL, params=params, timeout=30)
-    response.raise_for_status()
-
-    root = ET.fromstring(response.text)
+    page_size = min(max(MAX_RESULTS, 100), 500)
+    hard_cap = max(MAX_RESULTS * 8, 2000)
+    start_idx = 0
     papers: list[dict] = []
-    for entry in root.findall(f"{{{ARXIV_NS}}}entry"):
-        try:
-            title_el = entry.find(f"{{{ARXIV_NS}}}title")
-            abstract_el = entry.find(f"{{{ARXIV_NS}}}summary")
-            id_el = entry.find(f"{{{ARXIV_NS}}}id")
-            published_el = entry.find(f"{{{ARXIV_NS}}}published")
-            if any(
-                el is None
-                for el in (title_el, abstract_el, id_el, published_el)
-            ):
-                continue
+    seen_ids: set[str] = set()
 
-            # Parse the UTC timestamp ("2026-06-14T18:00:00Z")
-            published = datetime.fromisoformat(
-                (published_el.text or "").strip().replace("Z", "+00:00")
-            )
+    while start_idx < hard_cap:
+        params = {
+            "search_query": f"cat:{category}",
+            "start": start_idx,
+            "max_results": min(page_size, hard_cap - start_idx),
+            "sortBy": "submittedDate",
+            "sortOrder": "descending",
+        }
+        response = httpx.get(ARXIV_API_URL, params=params, timeout=60)
+        response.raise_for_status()
+        root = ET.fromstring(response.text)
+        entries = root.findall(f"{{{ARXIV_NS}}}entry")
+        if not entries:
+            break
 
-            if not (window_start <= published < window_end):
-                continue
+        oldest_seen: datetime | None = None
+        for entry in entries:
+            try:
+                title_el = entry.find(f"{{{ARXIV_NS}}}title")
+                abstract_el = entry.find(f"{{{ARXIV_NS}}}summary")
+                id_el = entry.find(f"{{{ARXIV_NS}}}id")
+                published_el = entry.find(f"{{{ARXIV_NS}}}published")
+                if any(el is None for el in (title_el, abstract_el, id_el, published_el)):
+                    continue
 
-            authors = [
-                a.findtext(f"{{{ARXIV_NS}}}name", "").strip()
-                for a in entry.findall(f"{{{ARXIV_NS}}}author")
-            ]
-            papers.append(
-                {
-                    "title": title_el.text.strip(),
+                published = datetime.fromisoformat(
+                    (published_el.text or "").strip().replace("Z", "+00:00")
+                )
+                oldest_seen = published if oldest_seen is None else min(oldest_seen, published)
+
+                if not (window_start <= published < window_end):
+                    continue
+
+                paper_id = (id_el.text or "").strip()
+                if not paper_id or paper_id in seen_ids:
+                    continue
+                seen_ids.add(paper_id)
+
+                authors = [
+                    a.findtext(f"{{{ARXIV_NS}}}name", "").strip()
+                    for a in entry.findall(f"{{{ARXIV_NS}}}author")
+                ]
+                papers.append({
+                    "title": " ".join((title_el.text or "").split()),
                     "authors": authors,
-                    "abstract": abstract_el.text.strip(),
-                    "id": id_el.text.strip(),
-                }
-            )
-        except (AttributeError, TypeError, ValueError):
-            continue
+                    "abstract": " ".join((abstract_el.text or "").split()),
+                    "id": paper_id,
+                })
+            except (AttributeError, TypeError, ValueError):
+                continue
 
+        # Sorted newest-first: once the page reaches before the weekly start,
+        # no later page can contain a paper inside the requested window.
+        if oldest_seen is not None and oldest_seen < window_start:
+            break
+        if len(entries) < params["max_results"]:
+            break
+
+        start_idx += len(entries)
+        time.sleep(3)  # be polite to the arXiv API between paginated requests
+
+    if start_idx >= hard_cap:
+        print(f"Warning: hit arXiv hard fetch cap ({hard_cap}) for {category}.")
     return papers
 
 
@@ -257,7 +281,7 @@ def select_best(
         extra_body={"usage": {"include": True}} if IS_OPENROUTER else {},
     )
 
-    raw = (completion.choices[0].message.content or "").strip()
+    raw = _completion_text(completion, f"selecting papers for {category}")
 
     # Extract the first JSON array from the response, tolerating markdown code
     # fences or leading/trailing explanation text.
@@ -281,6 +305,20 @@ def select_best(
 
     valid = [i for i in indices if isinstance(i, int) and 0 <= i < len(papers)]
     return [papers[i] for i in valid], completion.usage
+
+
+def _completion_text(completion, purpose: str) -> str:
+    """Return visible model text or fail loudly instead of emailing a blank digest."""
+    choice = completion.choices[0]
+    content = choice.message.content
+    text = content.strip() if isinstance(content, str) else ""
+    finish_reason = getattr(choice, "finish_reason", None)
+    if not text:
+        raise RuntimeError(
+            f"LLM returned an empty visible response while {purpose}. "
+            f"finish_reason={finish_reason!r}. Increase the completion budget or retry."
+        )
+    return text
 
 
 def format_digest(results: dict[str, list[dict]]) -> str:
@@ -318,18 +356,36 @@ def format_digest(results: dict[str, list[dict]]) -> str:
     client = _llm_client()
     model = LLM_MODEL
 
-    completion = client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        
-        max_completion_tokens=8000,
-        extra_body={"usage": {"include": True}} if IS_OPENROUTER else {},
-    )
+    # Reasoning-capable models can consume much of max_completion_tokens on
+    # internal reasoning. A too-small budget can therefore yield zero visible
+    # text even though usage reports thousands of completion tokens. Retry once
+    # with a larger budget rather than sending an empty email.
+    budgets = (16000, 24000)
+    last_completion = None
+    last_error: Exception | None = None
+    for attempt, budget in enumerate(budgets, start=1):
+        completion = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            max_completion_tokens=budget,
+            extra_body={"usage": {"include": True}} if IS_OPENROUTER else {},
+        )
+        last_completion = completion
+        try:
+            text = _completion_text(completion, "writing the weekly digest")
+            if len(text) < 300:
+                raise RuntimeError(f"Digest was unexpectedly short ({len(text)} chars).")
+            if attempt > 1:
+                print(f"Digest generation succeeded on retry {attempt}.")
+            return text, completion.usage
+        except RuntimeError as exc:
+            last_error = exc
+            print(f"Digest generation attempt {attempt} failed: {exc}")
 
-    return (completion.choices[0].message.content or "").strip(), completion.usage
+    raise RuntimeError(f"Could not generate a non-empty digest: {last_error}")
 
 
 def create_pdf(body: str) -> Path:
@@ -368,11 +424,20 @@ def send_email(subject: str, body: str, attachment: Path | None = None) -> None:
         pdf_part.add_header("Content-Disposition", "attachment", filename=attachment.name)
         msg.attach(pdf_part)
     else:
-        html = md.markdown(body, extensions=["extra"])
-        msg = MIMEText(html, "html", "utf-8")
+        # multipart/alternative gives Gmail both a plain-text fallback and HTML.
+        # This also makes failures in Markdown rendering much easier to diagnose.
+        html_fragment = md.markdown(body, extensions=["extra"])
+        html = (
+            "<!doctype html><html><body>"
+            + html_fragment
+            + "</body></html>"
+        )
+        msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
         msg["From"] = f"{EMAIL_DISPLAY_NAME} <{address}>"
         msg["To"] = EMAIL_TO
+        msg.attach(MIMEText(body, "plain", "utf-8"))
+        msg.attach(MIMEText(html, "html", "utf-8"))
 
     with smtplib.SMTP("smtp.gmail.com", 587, timeout=60) as smtp:
         smtp.ehlo()
@@ -517,6 +582,8 @@ def main() -> None:
                 openrouter_cost += getattr(usage, "cost", 0.0) or 0.0
 
     body, usage = format_digest(results)
+    print(f"Digest generated: {len(body)} characters")
+    print(f"Digest preview: {body[:500]!r}")
     prompt_tokens += usage.prompt_tokens
     completion_tokens += usage.completion_tokens
     if IS_OPENROUTER:
